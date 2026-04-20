@@ -106,17 +106,50 @@ class SaleOrderAI(models.Model):
         catalogue tool) and 'qty'. 'price_unit' is optional – falls back to
         the product's list price when omitted or zero.
         """
+        try:
+            partner_id = int(partner_id)
+        except (TypeError, ValueError):
+            return "Tool error: 'partner_id' must be a valid integer."
+
+        if lines is None:
+            lines = []
+        if not isinstance(lines, list):
+            return "Tool error: 'lines' must be a list of line dictionaries."
+
         order_lines = []
-        for line in (lines or []):
-            product = self.sudo().env['product.product'].browse(int(line['product_id']))
-            price_unit = float(line.get('price_unit') or 0.0) or product.lst_price
+        product_model = self.sudo().env['product.product']
+        for index, line in enumerate(lines, start=1):
+            if not isinstance(line, dict):
+                return f"Tool error: line {index} must be a dictionary."
+            if 'product_id' not in line:
+                return f"Tool error: line {index} is missing required field 'product_id'."
+
+            try:
+                product_id = int(line['product_id'])
+            except (TypeError, ValueError):
+                return f"Tool error: line {index} has an invalid 'product_id'."
+
+            product = product_model.browse(product_id).exists()
+            if not product:
+                return f"Tool error: line {index} references unknown product_id {product_id}."
+
+            try:
+                qty = float(line.get('qty', 1.0))
+            except (TypeError, ValueError):
+                return f"Tool error: line {index} has an invalid 'qty'."
+
+            try:
+                price_unit = float(line.get('price_unit') or 0.0) or product.lst_price
+            except (TypeError, ValueError):
+                return f"Tool error: line {index} has an invalid 'price_unit'."
+
             order_lines.append((0, 0, {
                 'product_id': product.id,
-                'product_uom_qty': float(line.get('qty', 1.0)),
+                'product_uom_qty': qty,
                 'price_unit': price_unit,
             }))
         order = self.sudo().create({
-            'partner_id': int(partner_id),
+            'partner_id': partner_id,
             'order_line': order_lines,
             'note': note or '',
         })
