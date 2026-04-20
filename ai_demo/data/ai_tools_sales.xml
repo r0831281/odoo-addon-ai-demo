@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         AI Tools – Sales Topic
+         Tools for analysing sale history and generating offers.
+         ============================================================ -->
+
+    <!-- 1. Get sale order history for the partner -->
+    <record id="ai_tool_sale_get_history" model="ir.actions.server">
+        <field name="name">AI Demo: Get Sale History</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Sale History
+Retrieves the confirmed sale order history for the customer linked to this lead, including order dates, totals, and product lines.
+Use this tool before drafting an offer or when the user asks about previous purchases, order history, or buying patterns.
+Optional: provide a limit (default 10) to control how many orders to return.</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "limit": {
+            "type": "number",
+            "description": "Maximum number of sale orders to return (default: 10)"
+        }
+    },
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_sale_history(limit)]]></field>
+    </record>
+
+    <!-- 2. Get messages/notes from lead and linked sale orders -->
+    <record id="ai_tool_sale_get_chatter_messages" model="ir.actions.server">
+        <field name="name">AI Demo: Get Sale Messages</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Sale Messages
+Retrieves recent messages, emails, and notes from this lead and its linked sale orders.
+Use this tool to understand customer needs expressed in messages before drafting a proposal or offer.
+Optional: provide a limit (default 15).</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "limit": {
+            "type": "number",
+            "description": "Maximum number of messages to return (default: 15)"
+        }
+    },
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_sale_messages(limit)]]></field>
+    </record>
+
+    <!-- 3. Get product catalogue with prices and stock -->
+    <record id="ai_tool_sale_get_product_catalogue" model="ir.actions.server">
+        <field name="name">AI Demo: Get Product Catalogue</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Product Catalogue
+Retrieves available products for sale with their internal reference, list price, currency, and available stock quantity.
+Use this tool when you need to select products for an offer or when the user asks what products are available.
+Optional: filter by product category ID.</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "category_id": {
+            "type": "number",
+            "description": "Product category ID to filter by (optional – omit for all products)"
+        }
+    },
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = env['product.template'].sudo()._ai_get_product_catalogue(category_id)]]></field>
+    </record>
+
+    <!-- 4. Create a sale quotation -->
+    <record id="ai_tool_sale_create_quotation" model="ir.actions.server">
+        <field name="name">AI Demo: Create Quotation</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Create a Sale Quotation
+Creates a draft sale order (quotation) with the specified product lines.
+Use this tool only after confirming the products and quantities with the user.
+Each line must include a product_id (from the catalogue tool), qty, and optionally price_unit.</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "partner_id": {
+            "type": "number",
+            "description": "ID of the customer (partner) for the quotation"
+        },
+        "lines": {
+            "type": "array",
+            "description": "List of order lines",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "product_id": {
+                        "type": "number",
+                        "description": "ID of the product"
+                    },
+                    "qty": {
+                        "type": "number",
+                        "description": "Quantity to order"
+                    },
+                    "price_unit": {
+                        "type": "number",
+                        "description": "Unit price (optional, uses product list price if omitted)"
+                    }
+                },
+                "required": ["product_id", "qty"]
+            }
+        },
+        "note": {
+            "type": "string",
+            "description": "Optional terms, notes, or remarks for the quotation"
+        }
+    },
+    "required": ["partner_id", "lines"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = env['sale.order'].sudo()._ai_create_quotation(partner_id, lines, note)]]></field>
+    </record>
+</odoo>

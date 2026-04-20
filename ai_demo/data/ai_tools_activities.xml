@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         AI Tools – Activities Topic
+         Tools for reading, suggesting and creating activities on leads.
+         ============================================================ -->
+
+    <!-- 1. Get open activities on the current lead -->
+    <record id="ai_tool_activity_get_open" model="ir.actions.server">
+        <field name="name">AI Demo: Get Open Activities</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Open Activities
+Retrieves all planned (open) activities on this lead, including type, summary, deadline, and assigned user.
+Always call this tool first before suggesting or creating new activities to avoid duplicates.</field>
+        <field name="ai_tool_schema">{
+    "properties": {},
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_open_activities()]]></field>
+    </record>
+
+    <!-- 2. Suggest next-best activities based on lead context -->
+    <record id="ai_tool_activity_suggest" model="ir.actions.server">
+        <field name="name">AI Demo: Suggest Activities</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Suggest Activities
+Analyses the lead's current stage, last contact date, and planned activities to suggest the most appropriate next steps.
+Use this tool when the user asks what to do next, or after reading a voice transcription summary to propose follow-ups.</field>
+        <field name="ai_tool_schema">{
+    "properties": {},
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_suggest_activities()]]></field>
+    </record>
+
+    <!-- 3. Create a scheduled activity on the lead -->
+    <record id="ai_tool_activity_create" model="ir.actions.server">
+        <field name="name">AI Demo: Create Activity</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Create an Activity
+Creates a scheduled activity on this lead.
+Use this tool only after confirming the details with the user, or when explicitly asked to plan a follow-up from a voice transcription.
+Activity types: call, email, meeting, todo.</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "activity_type": {
+            "type": "string",
+            "description": "Type of activity: call, email, meeting, or todo"
+        },
+        "summary": {
+            "type": "string",
+            "description": "Short summary / title of the activity"
+        },
+        "date_deadline": {
+            "type": "string",
+            "description": "Deadline date in YYYY-MM-DD format"
+        },
+        "note": {
+            "type": "string",
+            "description": "Additional notes or description for the activity (optional)"
+        },
+        "user_id": {
+            "type": "number",
+            "description": "ID of the user to assign the activity to (optional, defaults to current user)"
+        }
+    },
+    "required": ["activity_type", "summary", "date_deadline"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_create_activity(activity_type, summary, date_deadline, note, user_id)]]></field>
+    </record>
+</odoo>
