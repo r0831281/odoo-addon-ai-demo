@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        <!-- ============================================================
+             Demo Partner: TechNova Solutions
+             A fictional company used as the central customer in all
+             demo flows.
+             ============================================================ -->
+        <record id="demo_partner_technova" model="res.partner">
+            <field name="name">TechNova Solutions</field>
+            <field name="is_company" eval="True"/>
+            <field name="street">42 Innovation Boulevard</field>
+            <field name="city">Brussels</field>
+            <field name="zip">1000</field>
+            <field name="country_id" ref="base.be"/>
+            <field name="email">info@technova-demo.example.com</field>
+            <field name="phone">+32 2 555 01 00</field>
+            <field name="website">https://www.technova-demo.example.com</field>
+            <field name="comment">Demo customer for the AI Demo addon. Used in all pre-configured demo flows.</field>
+        </record>
+
+        <!-- Contact person at TechNova -->
+        <record id="demo_contact_sophie" model="res.partner">
+            <field name="name">Sophie Dumont</field>
+            <field name="parent_id" ref="demo_partner_technova"/>
+            <field name="function">Head of Procurement</field>
+            <field name="email">s.dumont@technova-demo.example.com</field>
+            <field name="phone">+32 477 12 34 56</field>
+            <field name="type">contact</field>
+        </record>
+
+        <!-- ============================================================
+             Demo Products
+             Three complementary products that make sense as a bundle
+             for the hardware-renewal scenario.
+             ============================================================ -->
+        <record id="demo_product_laptop_tmpl" model="product.template">
+            <field name="name">AI Pro Laptop 15"</field>
+            <field name="type">consu</field>
+            <field name="list_price">1299.00</field>
+            <field name="default_code">AI-LAP-001</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="description_sale">High-performance laptop with AI acceleration chip. 32 GB RAM, 1 TB NVMe SSD, 10h+ battery. Microsoft Teams and Zoom certified. USB-C charging.</field>
+        </record>
+
+        <record id="demo_product_dock_tmpl" model="product.template">
+            <field name="name">Universal Docking Station Pro</field>
+            <field name="type">consu</field>
+            <field name="list_price">249.00</field>
+            <field name="default_code">AI-DOCK-002</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="description_sale">USB-C docking station with dual 4K monitor support, 6× USB ports, Gigabit Ethernet and 90 W laptop charging pass-through.</field>
+        </record>
+
+        <record id="demo_product_headset_tmpl" model="product.template">
+            <field name="name">Professional Noise-Cancelling Headset</field>
+            <field name="type">consu</field>
+            <field name="list_price">189.00</field>
+            <field name="default_code">AI-HEAD-003</field>
+            <field name="sale_ok" eval="True"/>
+            <field name="description_sale">Over-ear ANC headset with 30 h battery life, USB-A / 3.5 mm dual connection. Microsoft Teams certified with integrated call controls.</field>
+        </record>
+
+        <!-- ============================================================
+             Demo CRM Lead: TechNova – Q2 Hardware Renewal
+             A realistic opportunity at the "Qualified" stage with a
+             rich context so all AI tools return meaningful results.
+             ============================================================ -->
+        <record id="demo_lead_technova" model="crm.lead">
+            <field name="name">TechNova – Q2 Hardware Renewal (50 Workstations)</field>
+            <field name="partner_id" ref="demo_partner_technova"/>
+            <field name="contact_name">Sophie Dumont</field>
+            <field name="email_from">s.dumont@technova-demo.example.com</field>
+            <field name="phone">+32 477 12 34 56</field>
+            <field name="type">opportunity</field>
+            <field name="priority">1</field>
+            <field name="expected_revenue">65000.00</field>
+            <!-- Use the first stage that looks like "Qualified"; fall back to the very first stage -->
+            <field name="stage_id" eval="
+                env['crm.stage'].search([('name', 'ilike', 'qualif')], limit=1).id
+                or env['crm.stage'].search([], order='sequence asc', limit=1).id
+            "/>
+            <field name="description">Customer is evaluating a full hardware refresh for 50 employee workstations.
+Approved budget: ~€65,000.
+
+Key requirements:
+- Battery life: minimum 8 hours under standard office workload
+- Certifications: Microsoft Teams + Zoom
+- USB-C docking station compatibility in every bundle
+- Delivery within 4 weeks of order confirmation
+- On-site warranty: minimum 3 years
+
+Current provider: Dell (relationship strained after late delivery on last order).
+Decision expected: end of Q2 2025.
+Main contact: Sophie Dumont, Head of Procurement.</field>
+        </record>
+
+        <!-- ============================================================
+             Chatter messages on the lead
+             These messages populate the _ai_get_communication() and
+             _ai_get_sale_messages() tools with realistic content.
+             ============================================================ -->
+
+        <!-- Internal note from a sales rep after a call -->
+        <record id="demo_msg_call_note" model="mail.message">
+            <field name="model">crm.lead</field>
+            <field name="res_id" ref="demo_lead_technova"/>
+            <field name="message_type">comment</field>
+            <field name="subtype_id" ref="mail.mt_note"/>
+            <field name="author_id" eval="env.ref('base.user_admin').partner_id.id"/>
+            <field name="body"><![CDATA[
+<p><strong>📞 Call summary – Sophie Dumont – 12 March 2025</strong></p>
+<p>Budget confirmed and approved for Q2. Sophie's key concerns:</p>
+<ul>
+    <li>Battery life must exceed 8 h (remote workers are away from desks all day)</li>
+    <li>Full Microsoft Teams <em>and</em> Zoom certification — IT policy requirement</li>
+    <li>Every laptop must ship with a compatible USB-C docking station</li>
+</ul>
+<p><strong>Pain points with current supplier (Dell):</strong> last order arrived 3 weeks late and 4 units had the wrong keyboard layout. Sophie is actively looking to switch if we can demonstrate reliable delivery.</p>
+<p><strong>Action:</strong> Send formal product proposal with delivery SLA by Friday 15 March.</p>
+]]></field>
+        </record>
+
+        <!-- Inbound e-mail from Sophie -->
+        <record id="demo_msg_inbound_email" model="mail.message">
+            <field name="model">crm.lead</field>
+            <field name="res_id" ref="demo_lead_technova"/>
+            <field name="message_type">email</field>
+            <field name="subtype_id" ref="mail.mt_comment"/>
+            <field name="email_from">s.dumont@technova-demo.example.com</field>
+            <field name="author_id" eval="env.ref('base.user_admin').partner_id.id"/>
+            <field name="body"><![CDATA[
+<p>Hello,</p>
+<p>Following our call on 12 March, I'd like to formally confirm our requirements for the hardware renewal project:</p>
+<ol>
+    <li>Quantity: <strong>50 laptops</strong>, each with a docking station</li>
+    <li>Battery life: minimum <strong>8 hours</strong> under standard workload</li>
+    <li>Certifications: <strong>Microsoft Teams + Zoom</strong></li>
+    <li>Delivery: maximum <strong>4 weeks</strong> after order confirmation</li>
+    <li>Warranty: minimum <strong>3 years on-site</strong></li>
+</ol>
+<p>Additionally, we would be interested in a quote for <strong>noise-cancelling headsets</strong> (optional item, ~50 units) — our IT team mentioned it would improve the remote meeting experience.</p>
+<p>Could you send us a formal quotation this week?</p>
+<p>Best regards,<br/>
+<strong>Sophie Dumont</strong><br/>
+Head of Procurement — TechNova Solutions<br/>
++32 477 12 34 56</p>
+]]></field>
+        </record>
+
+        <!-- Internal stock-availability note -->
+        <record id="demo_msg_stock_note" model="mail.message">
+            <field name="model">crm.lead</field>
+            <field name="res_id" ref="demo_lead_technova"/>
+            <field name="message_type">comment</field>
+            <field name="subtype_id" ref="mail.mt_note"/>
+            <field name="author_id" eval="env.ref('base.user_admin').partner_id.id"/>
+            <field name="body"><![CDATA[
+<p><strong>📦 Internal — stock check (18 March 2025)</strong></p>
+<p>Checked availability with the warehouse team:</p>
+<ul>
+    <li><strong>AI Pro Laptop 15":</strong> 30 units in stock — need to order 20 more (supplier lead time ~2 weeks)</li>
+    <li><strong>Universal Docking Station Pro:</strong> 45 units in stock — sufficient for the full order</li>
+    <li><strong>Noise-Cancelling Headset:</strong> 60 units in stock — excellent upsell opportunity with no stock risk</li>
+</ul>
+<p>Estimated total delivery if we place the laptop replenishment PO today: <strong>3 weeks</strong>, within Sophie's 4-week deadline.</p>
+]]></field>
+        </record>
+
+        <!-- Simulated voice transcription note (for the voice demo flow) -->
+        <record id="demo_msg_voice_transcript" model="mail.message">
+            <field name="model">crm.lead</field>
+            <field name="res_id" ref="demo_lead_technova"/>
+            <field name="message_type">comment</field>
+            <field name="subtype_id" ref="mail.mt_note"/>
+            <field name="author_id" eval="env.ref('base.user_admin').partner_id.id"/>
+            <field name="body"><![CDATA[
+<p><strong>🎙️ Voice transcription — Sophie Dumont — 25 March 2025</strong></p>
+<p><em>[Auto-transcribed from call recording]</em></p>
+<p>"Hi, it's Sophie. I just had an IT meeting and I need to add some info before we finalize. So, uh, IT confirmed they also need a laptop stand — ergonomics policy — but that's not urgent, we can add it later. The key point is: the CFO pushed back the decision deadline to end of April, so we still have time. But the budget is still locked in. Oh, and they want a demo unit for one laptop by next week if possible — the IT manager wants to test Teams before signing off. Can you arrange that? Just one unit, delivered to me personally. Also, I almost forgot — the old headset order from February, the 12 units we ordered, 4 of them arrived with a broken mic. We never got a replacement. Can someone check on that? It's invoice INV/2025/0042 I think. Thanks."</p>
+]]></field>
+        </record>
+
+        <!-- ============================================================
+             Open Activity on Lead
+             Populates the _ai_get_open_activities() tool.
+             ============================================================ -->
+        <record id="demo_activity_followup" model="mail.activity">
+            <field name="res_model">crm.lead</field>
+            <field name="res_id" ref="demo_lead_technova"/>
+            <field name="activity_type_id" ref="mail.mail_activity_data_call"/>
+            <field name="summary">Follow-up: confirm quotation received &amp; answer questions</field>
+            <field name="date_deadline" eval="(datetime.date.today() + timedelta(days=3)).strftime('%Y-%m-%d')"/>
+            <field name="note">Sophie Dumont is expecting our formal quotation. Confirm receipt, clarify the 3-year on-site warranty terms, and discuss the demo-unit request from the IT manager.</field>
+            <field name="user_id" ref="base.user_admin"/>
+        </record>
+
+        <!-- ============================================================
+             Complex demo data (confirmed sale orders + posted invoices)
+             Created via Python to handle accounting setup gracefully
+             across different Odoo instances.
+             ============================================================ -->
+        <function model="crm.lead" name="_ai_demo_create_context_data">
+            <value eval="ref('ai_demo.demo_partner_technova')"/>
+            <value eval="ref('ai_demo.demo_lead_technova')"/>
+            <value eval="[
+                ref('ai_demo.demo_product_laptop_tmpl'),
+                ref('ai_demo.demo_product_dock_tmpl'),
+                ref('ai_demo.demo_product_headset_tmpl'),
+            ]"/>
+        </function>
+
+    </data>
+</odoo>
