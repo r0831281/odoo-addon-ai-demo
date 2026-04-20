@@ -128,7 +128,7 @@ Main contact: Sophie Dumont, Head of Procurement.</field>
             <field name="message_type">email</field>
             <field name="subtype_id" ref="mail.mt_comment"/>
             <field name="email_from">s.dumont@technova-demo.example.com</field>
-            <field name="author_id" eval="env.ref('base.user_admin').partner_id.id"/>
+            <field name="author_id" ref="demo_contact_sophie"/>
             <field name="body"><![CDATA[
 <p>Hello,</p>
 <p>Following our call on 12 March, I'd like to formally confirm our requirements for the hardware renewal project:</p>
