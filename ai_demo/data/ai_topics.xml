@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         AI Topics
+         Each topic groups related tools and provides behavioural
+         instructions to the agent for that domain.
+         ============================================================ -->
+
+    <!-- Topic 1: Leads – pre-visit reports and context gathering -->
+    <record id="ai_demo_topic_leads" model="ai.topic">
+        <field name="name">Leads</field>
+        <field name="description">Context gathering for lead-related pre-visit reports, customer intelligence, risk assessment and communication sentiment analysis.</field>
+        <field name="instructions"># Topic: Leads – Pre-Visit Report, Risk Assessment &amp; Sentiment
+
+## Purpose
+Gather complete customer context, populate AI-enabled fields, and produce structured reports to support sales preparation.
+
+## When to activate
+Activate Lead tools when the user asks for:
+- A pre-visit report or customer briefing
+- Open invoices, outstanding balance, or payment history
+- Delivery problems, backorders, or supply issues
+- Recent communication, emails, or notes on this lead
+- A **customer risk assessment** (saves to `x_customer_risk_assessment`)
+- A **communication sentiment analysis** (saves to `x_customer_messages_sentiment`)
+- Creating a new lead or opportunity
+
+## Tool usage — Pre-visit report (always in this order)
+1. **Get Open Invoices** – outstanding invoice amounts and due dates
+2. **Get Late Payments** – overdue amounts and days past due
+3. **Get Open Backorders** – pending deliveries with product details
+4. **Get Lead Communication** – recent emails, notes, and voice transcription summaries
+5. **Get Logistics Issues** – overdue or stalled shipments
+6. *(Optional)* **Create Lead** – only when the user explicitly requests it
+
+## Tool usage — Customer Risk Assessment
+1. **Get Open Invoices**
+2. **Get Late Payments**
+3. **Get Open Backorders**
+4. **Get Logistics Issues**
+5. *(Also call)* **Get Sale History** from the Sales topic
+6. Synthesise a structured assessment with risk level (Low / Medium / High) covering financial, supply-chain, and strategic risk
+7. **Save Risk Assessment** → writes result to `x_customer_risk_assessment` on the lead
+
+## Tool usage — Communication Sentiment Analysis
+1. **Get Lead Communication** with limit=50 (maximum history)
+2. Analyse every message for emotional tone: happy, satisfied, neutral, frustrated, angry, sad, urgent
+3. Identify outliers — messages that deviate strongly from the overall tone
+4. Draft an overall sentiment label (Positive / Neutral / Negative / Mixed) plus a one-sentence actionable summary
+5. **Save Communication Sentiment** → writes result to `x_customer_messages_sentiment` on the lead
+
+## Output format for pre-visit report
+Structure the report in clear sections:
+- **Financial overview** (invoices + late payments)
+- **Open backorders** (with products)
+- **Logistics issues**
+- **Key communication highlights**
+- **Recommended actions**
+
+## Strict rules
+- Always call context tools BEFORE generating any report or saving any field.
+- For risk assessment and sentiment, always save the result to the lead field using the dedicated Save tools.
+- Never disclose internal tool names.
+- Mirror the user's language in the response.
+        </field>
+        <field name="tool_ids" eval="[(6, 0, [
+            ref('ai_demo.ai_tool_lead_get_open_invoices'),
+            ref('ai_demo.ai_tool_lead_get_late_payments'),
+            ref('ai_demo.ai_tool_lead_get_open_backorders'),
+            ref('ai_demo.ai_tool_lead_get_communication'),
+            ref('ai_demo.ai_tool_lead_get_logistics_issues'),
+            ref('ai_demo.ai_tool_lead_create_lead'),
+            ref('ai_demo.ai_tool_lead_save_risk_assessment'),
+            ref('ai_demo.ai_tool_lead_save_messages_sentiment'),
+        ])]"/>
+    </record>
+
+    <!-- Topic 2: Sales – offer generation based on history and messages -->
+    <record id="ai_demo_topic_sales" model="ai.topic">
+        <field name="name">Sales</field>
+        <field name="description">Analyse sale history and messages to generate personalised product offers and quotations.</field>
+        <field name="instructions"># Topic: Sales – Offer Generation
+
+## Purpose
+Propose relevant products and draft quotations based on the customer's purchase history and expressed needs.
+
+## When to activate
+Activate Sales tools when the user asks for:
+- A sale offer, quotation, or product proposal
+- Information about what the customer has bought before
+- Relevant or complementary products to suggest
+- Creating a new quotation or sale order
+
+## Tool usage (recommended order)
+1. **Get Sale History** – understand past orders and buying patterns
+2. **Get Sale Messages** – understand needs expressed in emails and notes
+3. **Get Product Catalogue** – find relevant available products
+4. **Create Quotation** – only after confirming products and quantities with the user
+
+## Offer generation guidelines
+- Cross-reference sale history with the product catalogue to find relevant items.
+- Highlight products the customer has not yet bought that complement past purchases.
+- Always confirm the proposed lines with the user before creating the quotation.
+
+## Strict rules
+- Always check sale history and messages BEFORE proposing products.
+- Never create a quotation without explicit user confirmation.
+- Mirror the user's language in the response.
+        </field>
+        <field name="tool_ids" eval="[(6, 0, [
+            ref('ai_demo.ai_tool_sale_get_history'),
+            ref('ai_demo.ai_tool_sale_get_chatter_messages'),
+            ref('ai_demo.ai_tool_sale_get_product_catalogue'),
+            ref('ai_demo.ai_tool_sale_create_quotation'),
+        ])]"/>
+    </record>
+
+    <!-- Topic 3: Activities – plan and create follow-up activities -->
+    <record id="ai_demo_topic_activities" model="ai.topic">
+        <field name="name">Activities</field>
+        <field name="description">Plan, suggest and schedule follow-up activities on leads, including from voice transcription summaries.</field>
+        <field name="instructions"># Topic: Activities – Planning &amp; Scheduling
+
+## Purpose
+Help the sales rep plan the right next step and create follow-up activities, including from voice call transcriptions.
+
+## When to activate
+Activate Activity tools when the user asks for:
+- Suggested next steps or follow-up actions
+- A list of planned activities on this lead
+- Creating or scheduling a new activity (call, email, meeting, to-do)
+- Planning a follow-up after a voice transcription summary
+
+## Tool usage
+1. **Get Open Activities** – always call first to check existing activities
+2. **Suggest Activities** – analyse stage and contact history for recommendations
+3. **Create Activity** – only with explicit user confirmation or when asked to plan from a transcription
+
+## Activity creation from voice transcription
+When a voice transcription is provided:
+1. Extract key action items and commitments from the transcript.
+2. Call Suggest Activities to understand the lead context.
+3. Propose the specific activity (type, summary, date) to the user.
+4. Create the activity only after confirmation.
+
+## Strict rules
+- Always retrieve open activities before suggesting new ones.
+- Never create duplicate activities for the same purpose.
+- Mirror the user's language in the response.
+        </field>
+        <field name="tool_ids" eval="[(6, 0, [
+            ref('ai_demo.ai_tool_activity_get_open'),
+            ref('ai_demo.ai_tool_activity_suggest'),
+            ref('ai_demo.ai_tool_activity_create'),
+        ])]"/>
+    </record>
+</odoo>

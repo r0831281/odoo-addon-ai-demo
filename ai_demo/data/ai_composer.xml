@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         Prompt Buttons
+         Created first so they can be linked via One2many to composers.
+         ============================================================ -->
+
+    <!-- Buttons for: Lead Chatter Assistant -->
+    <record id="ai_demo_btn_lead_previsit" model="ai.prompt.button">
+        <field name="name">Generate pre-visit report</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="ai_demo_btn_lead_activities" model="ai.prompt.button">
+        <field name="name">Suggest activities for this lead</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="ai_demo_btn_lead_offer" model="ai.prompt.button">
+        <field name="name">Create a sale offer based on history</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="ai_demo_btn_lead_communication" model="ai.prompt.button">
+        <field name="name">Summarize recent communication</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="ai_demo_btn_lead_risk" model="ai.prompt.button">
+        <field name="name">Assess customer risk</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="ai_demo_btn_lead_sentiment" model="ai.prompt.button">
+        <field name="name">Analyze communication sentiment</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <!-- Buttons for: Voice Transcription on Lead -->
+    <record id="ai_demo_btn_voice_summarize" model="ai.prompt.button">
+        <field name="name">Summarize prospect call</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="ai_demo_btn_voice_activity" model="ai.prompt.button">
+        <field name="name">Plan follow-up activity from this call</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="ai_demo_btn_voice_offer" model="ai.prompt.button">
+        <field name="name">Draft offer mentioned in call</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Buttons for: Sale Order Chatter Assistant -->
+    <record id="ai_demo_btn_sale_upsell" model="ai.prompt.button">
+        <field name="name">Suggest complementary products</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="ai_demo_btn_sale_history" model="ai.prompt.button">
+        <field name="name">Summarize order history for this customer</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="ai_demo_btn_sale_followup" model="ai.prompt.button">
+        <field name="name">Draft a follow-up email</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <!-- Buttons for: General Chatter Assistant -->
+    <record id="ai_demo_btn_general_summarize" model="ai.prompt.button">
+        <field name="name">Summarize the chatter conversation</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="ai_demo_btn_general_followup" model="ai.prompt.button">
+        <field name="name">Write a follow-up answer</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- ============================================================
+         Composer Rules
+         Each rule wires an interface location to the Demo Agent
+         with a tailored system prompt and quick-access buttons.
+         ============================================================ -->
+
+    <!-- 6a. Lead Chatter Button -->
+    <record id="ai_demo_composer_lead" model="ai.composer">
+        <field name="name">Demo: Lead Assistant</field>
+        <field name="interface_key">chatter_ai_button</field>
+        <field name="focused_models" eval="[(4, ref('crm.model_crm_lead'))]"/>
+        <field name="ai_agent" ref="ai_demo.ai_demo_agent"/>
+        <field name="default_prompt">You are a commercial AI assistant on a CRM Lead record.
+Use the available tools to gather data about this customer (open invoices, late payments, backorders, communication, logistics) before answering.
+When asked for a pre-visit report, collect ALL context tools first, then synthesise a structured report with clear sections.
+When asked for an offer, consult sale history and messages first, propose product lines, and confirm before creating a quotation.
+When asked about activities, always check open activities first, then suggest or create as requested.
+When asked for a risk assessment: gather all financial and logistics data, generate a structured assessment with a risk level (Low/Medium/High), then save it to the customer record using the Save Risk Assessment tool.
+When asked for a sentiment analysis: retrieve the full communication history (limit=50), label each message with an emotional tone, identify outliers, then save the analysis to the customer record using the Save Communication Sentiment tool.
+Always respond in the language used by the user.</field>
+        <field name="available_prompts" eval="[
+            (4, ref('ai_demo.ai_demo_btn_lead_previsit')),
+            (4, ref('ai_demo.ai_demo_btn_lead_activities')),
+            (4, ref('ai_demo.ai_demo_btn_lead_offer')),
+            (4, ref('ai_demo.ai_demo_btn_lead_communication')),
+            (4, ref('ai_demo.ai_demo_btn_lead_risk')),
+            (4, ref('ai_demo.ai_demo_btn_lead_sentiment')),
+        ]"/>
+    </record>
+
+    <!-- 6b. Voice Transcription on Lead -->
+    <record id="ai_demo_composer_voice_lead" model="ai.composer">
+        <field name="name">Demo: Lead Voice Summary</field>
+        <field name="interface_key">voice_transcription_component</field>
+        <field name="focused_models" eval="[(4, ref('crm.model_crm_lead'))]"/>
+        <field name="ai_agent" ref="ai_demo.ai_demo_agent"/>
+        <field name="default_prompt">You are summarising a voice transcription on a CRM lead.
+Extract the key points: customer pain points, expressed needs, commitments made by either party, and any follow-up actions mentioned.
+Format the summary in Markdown with clear sections.
+After summarising, suggest a concrete follow-up activity (type, summary, and proposed deadline) based on the conversation content.
+Always respond in the language of the transcription.</field>
+        <field name="available_prompts" eval="[
+            (4, ref('ai_demo.ai_demo_btn_voice_summarize')),
+            (4, ref('ai_demo.ai_demo_btn_voice_activity')),
+            (4, ref('ai_demo.ai_demo_btn_voice_offer')),
+        ]"/>
+    </record>
+
+    <!-- 6c. Sale Order Chatter Button -->
+    <record id="ai_demo_composer_sale" model="ai.composer">
+        <field name="name">Demo: Sale Order Assistant</field>
+        <field name="interface_key">chatter_ai_button</field>
+        <field name="focused_models" eval="[(4, ref('sale.model_sale_order'))]"/>
+        <field name="ai_agent" ref="ai_demo.ai_demo_agent"/>
+        <field name="default_prompt">You are a sales AI assistant on a Sale Order record.
+Help draft customer messages, suggest complementary or upsell products from the catalogue, and retrieve customer context such as payment history and open backorders.
+When drafting messages, write only the body – no subject line or signature.
+Always respond in the language used by the user.</field>
+        <field name="available_prompts" eval="[
+            (4, ref('ai_demo.ai_demo_btn_sale_upsell')),
+            (4, ref('ai_demo.ai_demo_btn_sale_history')),
+            (4, ref('ai_demo.ai_demo_btn_sale_followup')),
+        ]"/>
+    </record>
+
+    <!-- 6d. General Chatter Button (fallback – no focused model) -->
+    <record id="ai_demo_composer_general" model="ai.composer">
+        <field name="name">Demo: General Assistant</field>
+        <field name="interface_key">chatter_ai_button</field>
+        <field name="ai_agent" ref="ai_demo.ai_demo_agent"/>
+        <field name="default_prompt">You are a general AI assistant. Help the user with tasks related to this record.
+Use available tools when relevant. If asked to draft a message, write only the body.
+Always respond in the language used by the user.</field>
+        <field name="available_prompts" eval="[
+            (4, ref('ai_demo.ai_demo_btn_general_summarize')),
+            (4, ref('ai_demo.ai_demo_btn_general_followup')),
+        ]"/>
+    </record>
+</odoo>

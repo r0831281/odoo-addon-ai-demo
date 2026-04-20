@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============================================================
+         AI Tools – Leads Topic
+         All tools operate in the context of a crm.lead record.
+         ============================================================ -->
+
+    <!-- 1. Get open/unpaid invoices -->
+    <record id="ai_tool_lead_get_open_invoices" model="ir.actions.server">
+        <field name="name">AI Demo: Get Open Invoices</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Open Invoices
+Retrieves all unpaid or partially paid invoices for the customer linked to this lead.
+Returns invoice reference, due date, and outstanding amount.
+Use this tool when the user asks about open invoices, outstanding balance, or payment status.</field>
+        <field name="ai_tool_schema">{
+    "properties": {},
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_open_invoices()]]></field>
+    </record>
+
+    <!-- 2. Get late / overdue payments -->
+    <record id="ai_tool_lead_get_late_payments" model="ir.actions.server">
+        <field name="name">AI Demo: Get Late Payments</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Late Payments
+Retrieves overdue invoices for the customer linked to this lead, including the number of days overdue and outstanding amounts.
+Use this tool when the user asks about late payments, payment history, or financial risk.</field>
+        <field name="ai_tool_schema">{
+    "properties": {},
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_late_payments()]]></field>
+    </record>
+
+    <!-- 3. Get open backorders with product details -->
+    <record id="ai_tool_lead_get_open_backorders" model="ir.actions.server">
+        <field name="name">AI Demo: Get Open Backorders</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Open Backorders
+Retrieves open backorders (incomplete deliveries) for the customer linked to this lead, including product names, ordered quantities and quantities already delivered.
+Use this tool when the user asks about pending deliveries, backorders, or stock shortages.</field>
+        <field name="ai_tool_schema">{
+    "properties": {},
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_open_backorders()]]></field>
+    </record>
+
+    <!-- 4. Get chatter communication (emails, notes, voice transcriptions) -->
+    <record id="ai_tool_lead_get_communication" model="ir.actions.server">
+        <field name="name">AI Demo: Get Lead Communication</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Lead Communication
+Retrieves recent messages, emails, internal notes, and voice transcriptions from the lead's chatter, sorted newest first.
+Use this tool when the user asks about recent communication, email history, notes, or conversation summaries.
+Optional: provide a limit (default 20) to control how many messages to return.</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "limit": {
+            "type": "number",
+            "description": "Maximum number of messages to return (default: 20)"
+        }
+    },
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_communication(locals().get('limit'))]]></field>
+    </record>
+
+    <!-- 5. Get logistics issues (overdue pickings) -->
+    <record id="ai_tool_lead_get_logistics_issues" model="ir.actions.server">
+        <field name="name">AI Demo: Get Logistics Issues</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Get Logistics Issues
+Retrieves overdue or stalled deliveries/shipments for the customer linked to this lead (pickings that are past their scheduled date and not yet done).
+Use this tool when the user asks about delivery problems, late shipments, or supply chain issues.</field>
+        <field name="ai_tool_schema">{
+    "properties": {},
+    "required": [],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_logistics_issues()]]></field>
+    </record>
+
+    <!-- 6. Create a new CRM lead -->
+    <record id="ai_tool_lead_create_lead" model="ir.actions.server">
+        <field name="name">AI Demo: Create Lead</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Create a Lead
+Creates a new CRM lead/opportunity record.
+Use this tool only when the user explicitly asks to create a new lead and you have gathered the required name and description.
+Confirm details with the user before calling this tool.</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Title/name of the lead"
+        },
+        "description": {
+            "type": "string",
+            "description": "Description or notes about the lead"
+        },
+        "partner_id": {
+            "type": "number",
+            "description": "ID of the related customer/partner (optional)"
+        },
+        "team_id": {
+            "type": "number",
+            "description": "ID of the sales team to assign (optional)"
+        }
+    },
+    "required": ["name", "description"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(name, description, locals().get('partner_id'), locals().get('team_id'))]]></field>
+    </record>
+    <!-- 7. Save AI-generated risk assessment to the lead field -->
+    <record id="ai_tool_lead_save_risk_assessment" model="ir.actions.server">
+        <field name="name">AI Demo: Save Risk Assessment</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Save Customer Risk Assessment
+Writes the AI-generated risk assessment to the **x_customer_risk_assessment** field on this lead.
+
+**Call this tool ONLY AFTER** you have already called:
+- Get Open Invoices
+- Get Late Payments
+- Get Open Backorders
+- Get Logistics Issues
+- Get Sale History (via the Sales topic)
+
+…and have synthesised a complete risk assessment yourself.
+
+The `assessment` text must include:
+- **Overall risk level**: Low / Medium / High
+- **Financial risk** (invoice amounts, days overdue, payment behaviour trend)
+- **Supply-chain risk** (open backorders, overdue deliveries)
+- **Strategic risk** (account size, buying trend, relationship warning signs)
+- **Summary sentence** with the key concern and recommended action</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "assessment": {
+            "type": "string",
+            "description": "Complete structured risk assessment text including overall risk level (Low/Medium/High), financial risk, supply-chain risk, strategic risk, and recommended action."
+        }
+    },
+    "required": ["assessment"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_risk_assessment(assessment)]]></field>
+    </record>
+
+    <!-- 8. Save AI-generated communication sentiment to the lead field -->
+    <record id="ai_tool_lead_save_messages_sentiment" model="ir.actions.server">
+        <field name="name">AI Demo: Save Communication Sentiment</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Save Communication Sentiment Analysis
+Writes the AI-generated sentiment analysis to the **x_customer_messages_sentiment** field on this lead.
+
+**Call this tool ONLY AFTER** you have called Get Lead Communication (use limit=50 to capture the full history) and analysed every message for its emotional tone.
+
+The `sentiment_summary` text must include:
+- **Overall sentiment**: Positive / Neutral / Negative / Mixed
+- **Per-message breakdown**: date, author, label (happy, satisfied, neutral, frustrated, angry, sad, urgent)
+- **Outliers**: messages that deviate significantly from the overall tone (include date and reason)
+- **Actionable summary**: one sentence on what the tone means for the relationship and what to watch out for</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "sentiment_summary": {
+            "type": "string",
+            "description": "Complete sentiment analysis including overall tone, per-message emotional labels, identified outliers, and an actionable relationship summary."
+        }
+    },
+    "required": ["sentiment_summary"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_messages_sentiment(sentiment_summary)]]></field>
+    </record>
+</odoo>
