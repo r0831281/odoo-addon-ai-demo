@@ -109,7 +109,7 @@ class SaleOrderAI(models.Model):
         try:
             partner_id = int(partner_id)
         except (TypeError, ValueError):
-            return "Tool error: 'partner_id' must be a valid integer."
+            return "Tool error: 'partner_id' must be a valid integer. Make sure the lead has a linked customer, or pass the partner_id explicitly."
 
         if lines is None:
             lines = []
