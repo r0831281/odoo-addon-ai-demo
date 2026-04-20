@@ -69,20 +69,27 @@ class ProductTemplateAI(models.Model):
 
     @api.model
     def _ai_get_product_catalogue(self, category_id=None):
-        """Return available products with price and available stock."""
+        """Return available products with price and available stock.
+
+        Returns product.product (variant) IDs so they can be used directly
+        as product_id on sale.order.line without further conversion.
+        """
         domain = [('sale_ok', '=', True), ('active', '=', True)]
         if category_id:
             domain.append(('categ_id', '=', int(category_id)))
-        products = self.sudo().search(domain, limit=50)
-        if not products:
+        templates = self.sudo().search(domain, limit=50)
+        if not templates:
             return "No products found."
         lines = []
-        for p in products:
-            ref = f"[{p.default_code}] " if p.default_code else ""
+        for tmpl in templates:
+            variant = tmpl.product_variant_ids[:1]
+            if not variant:
+                continue
+            ref = f"[{tmpl.default_code}] " if tmpl.default_code else ""
             lines.append(
-                f"- {ref}{p.name} | "
-                f"Price: {p.list_price} {p.currency_id.name} | "
-                f"Stock: {p.qty_available}"
+                f"- product_id={variant.id} | {ref}{tmpl.name} | "
+                f"Price: {tmpl.list_price} {tmpl.currency_id.name} | "
+                f"Stock: {tmpl.qty_available}"
             )
         return "Product catalogue:\n" + "\n".join(lines)
 
@@ -93,13 +100,20 @@ class SaleOrderAI(models.Model):
 
     @api.model
     def _ai_create_quotation(self, partner_id, lines=None, note=None):
-        """Create a draft sale order (quotation) and return its name and id."""
+        """Create a draft sale order (quotation) and return its name and id.
+
+        Each line dict must have 'product_id' (product.product ID from the
+        catalogue tool) and 'qty'. 'price_unit' is optional – falls back to
+        the product's list price when omitted or zero.
+        """
         order_lines = []
         for line in (lines or []):
+            product = self.sudo().env['product.product'].browse(int(line['product_id']))
+            price_unit = float(line.get('price_unit') or 0.0) or product.lst_price
             order_lines.append((0, 0, {
-                'product_id': int(line['product_id']),
+                'product_id': product.id,
                 'product_uom_qty': float(line.get('qty', 1.0)),
-                'price_unit': float(line.get('price_unit', 0.0)),
+                'price_unit': price_unit,
             }))
         order = self.sudo().create({
             'partner_id': int(partner_id),

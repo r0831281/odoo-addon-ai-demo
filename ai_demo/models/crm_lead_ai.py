@@ -68,6 +68,7 @@ class CrmLeadAI(models.Model):
         for pick in pickings:
             products = []
             for move in pick.move_ids:
+                # Odoo 17+ uses `quantity`; earlier versions use `quantity_done`
                 qty_done = getattr(move, 'quantity', None)
                 if qty_done is None:
                     qty_done = getattr(move, 'quantity_done', 0)

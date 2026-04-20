@@ -77,7 +77,7 @@ Optional: provide a limit (default 20) to control how many messages to return.</
     "required": [],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_communication(limit)]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_communication(locals().get('limit'))]]></field>
     </record>
 
     <!-- 5. Get logistics issues (overdue pickings) -->
@@ -130,6 +130,6 @@ Confirm details with the user before calling this tool.</field>
     "required": ["name", "description"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(name, description, partner_id, team_id)]]></field>
+        <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(name, description, locals().get('partner_id'), locals().get('team_id'))]]></field>
     </record>
 </odoo>

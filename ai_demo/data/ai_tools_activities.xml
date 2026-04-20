@@ -76,6 +76,6 @@ Activity types: call, email, meeting, todo.</field>
     "required": ["activity_type", "summary", "date_deadline"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_create_activity(activity_type, summary, date_deadline, note, user_id)]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_create_activity(activity_type, summary, date_deadline, locals().get('note'), locals().get('user_id'))]]></field>
     </record>
 </odoo>

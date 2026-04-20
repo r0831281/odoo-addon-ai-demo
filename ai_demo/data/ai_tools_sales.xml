@@ -25,7 +25,7 @@ Optional: provide a limit (default 10) to control how many orders to return.</fi
     "required": [],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_sale_history(limit)]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_sale_history(locals().get('limit'))]]></field>
     </record>
 
     <!-- 2. Get messages/notes from lead and linked sale orders -->
@@ -48,7 +48,7 @@ Optional: provide a limit (default 15).</field>
     "required": [],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_sale_messages(limit)]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_get_sale_messages(locals().get('limit'))]]></field>
     </record>
 
     <!-- 3. Get product catalogue with prices and stock -->
@@ -71,7 +71,7 @@ Optional: filter by product category ID.</field>
     "required": [],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = env['product.template'].sudo()._ai_get_product_catalogue(category_id)]]></field>
+        <field name="code"><![CDATA[ai['result'] = env['product.template'].sudo()._ai_get_product_catalogue(locals().get('category_id'))]]></field>
     </record>
 
     <!-- 4. Create a sale quotation -->
@@ -121,6 +121,6 @@ Each line must include a product_id (from the catalogue tool), qty, and optional
     "required": ["partner_id", "lines"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = env['sale.order'].sudo()._ai_create_quotation(partner_id, lines, note)]]></field>
+        <field name="code"><![CDATA[ai['result'] = env['sale.order'].sudo()._ai_create_quotation(partner_id, lines, locals().get('note'))]]></field>
     </record>
 </odoo>
