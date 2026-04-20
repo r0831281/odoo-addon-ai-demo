@@ -19,6 +19,9 @@
         'data/ai_agent.xml',
         'data/ai_composer.xml',
     ],
+    'demo': [
+        'demo/demo_data.xml',
+    ],
     'installable': True,
     'application': False,
     'license': 'LGPL-3',

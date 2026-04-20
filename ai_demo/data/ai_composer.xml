@@ -22,6 +22,14 @@
         <field name="name">Summarize recent communication</field>
         <field name="sequence">40</field>
     </record>
+    <record id="ai_demo_btn_lead_risk" model="ai.prompt.button">
+        <field name="name">Assess customer risk</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="ai_demo_btn_lead_sentiment" model="ai.prompt.button">
+        <field name="name">Analyze communication sentiment</field>
+        <field name="sequence">60</field>
+    </record>
 
     <!-- Buttons for: Voice Transcription on Lead -->
     <record id="ai_demo_btn_voice_summarize" model="ai.prompt.button">
@@ -78,12 +86,16 @@ Use the available tools to gather data about this customer (open invoices, late 
 When asked for a pre-visit report, collect ALL context tools first, then synthesise a structured report with clear sections.
 When asked for an offer, consult sale history and messages first, propose product lines, and confirm before creating a quotation.
 When asked about activities, always check open activities first, then suggest or create as requested.
+When asked for a risk assessment: gather all financial and logistics data, generate a structured assessment with a risk level (Low/Medium/High), then save it to the customer record using the Save Risk Assessment tool.
+When asked for a sentiment analysis: retrieve the full communication history (limit=50), label each message with an emotional tone, identify outliers, then save the analysis to the customer record using the Save Communication Sentiment tool.
 Always respond in the language used by the user.</field>
         <field name="available_prompts" eval="[
             (4, ref('ai_demo.ai_demo_btn_lead_previsit')),
             (4, ref('ai_demo.ai_demo_btn_lead_activities')),
             (4, ref('ai_demo.ai_demo_btn_lead_offer')),
             (4, ref('ai_demo.ai_demo_btn_lead_communication')),
+            (4, ref('ai_demo.ai_demo_btn_lead_risk')),
+            (4, ref('ai_demo.ai_demo_btn_lead_sentiment')),
         ]"/>
     </record>
 

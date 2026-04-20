@@ -9,27 +9,45 @@
     <!-- Topic 1: Leads – pre-visit reports and context gathering -->
     <record id="ai_demo_topic_leads" model="ai.topic">
         <field name="name">Leads</field>
-        <field name="description">Context gathering for lead-related pre-visit reports and customer intelligence.</field>
-        <field name="instructions"># Topic: Leads – Pre-Visit Report &amp; Customer Context
+        <field name="description">Context gathering for lead-related pre-visit reports, customer intelligence, risk assessment and communication sentiment analysis.</field>
+        <field name="instructions"># Topic: Leads – Pre-Visit Report, Risk Assessment &amp; Sentiment
 
 ## Purpose
-Gather complete customer context to produce a structured pre-visit report and support sales preparation.
+Gather complete customer context, populate AI-enabled fields, and produce structured reports to support sales preparation.
 
 ## When to activate
 Activate Lead tools when the user asks for:
 - A pre-visit report or customer briefing
-- Information about open invoices, outstanding balance, or payment history
+- Open invoices, outstanding balance, or payment history
 - Delivery problems, backorders, or supply issues
 - Recent communication, emails, or notes on this lead
+- A **customer risk assessment** (saves to `x_customer_risk_assessment`)
+- A **communication sentiment analysis** (saves to `x_customer_messages_sentiment`)
 - Creating a new lead or opportunity
 
-## Tool usage (always in this order for a pre-visit report)
+## Tool usage — Pre-visit report (always in this order)
 1. **Get Open Invoices** – outstanding invoice amounts and due dates
 2. **Get Late Payments** – overdue amounts and days past due
 3. **Get Open Backorders** – pending deliveries with product details
 4. **Get Lead Communication** – recent emails, notes, and voice transcription summaries
 5. **Get Logistics Issues** – overdue or stalled shipments
 6. *(Optional)* **Create Lead** – only when the user explicitly requests it
+
+## Tool usage — Customer Risk Assessment
+1. **Get Open Invoices**
+2. **Get Late Payments**
+3. **Get Open Backorders**
+4. **Get Logistics Issues**
+5. *(Also call)* **Get Sale History** from the Sales topic
+6. Synthesise a structured assessment with risk level (Low / Medium / High) covering financial, supply-chain, and strategic risk
+7. **Save Risk Assessment** → writes result to `x_customer_risk_assessment` on the lead
+
+## Tool usage — Communication Sentiment Analysis
+1. **Get Lead Communication** with limit=50 (maximum history)
+2. Analyse every message for emotional tone: happy, satisfied, neutral, frustrated, angry, sad, urgent
+3. Identify outliers — messages that deviate strongly from the overall tone
+4. Draft an overall sentiment label (Positive / Neutral / Negative / Mixed) plus a one-sentence actionable summary
+5. **Save Communication Sentiment** → writes result to `x_customer_messages_sentiment` on the lead
 
 ## Output format for pre-visit report
 Structure the report in clear sections:
@@ -40,7 +58,8 @@ Structure the report in clear sections:
 - **Recommended actions**
 
 ## Strict rules
-- Always call context tools BEFORE generating the report.
+- Always call context tools BEFORE generating any report or saving any field.
+- For risk assessment and sentiment, always save the result to the lead field using the dedicated Save tools.
 - Never disclose internal tool names.
 - Mirror the user's language in the response.
         </field>
@@ -51,6 +70,8 @@ Structure the report in clear sections:
             ref('ai_demo.ai_tool_lead_get_communication'),
             ref('ai_demo.ai_tool_lead_get_logistics_issues'),
             ref('ai_demo.ai_tool_lead_create_lead'),
+            ref('ai_demo.ai_tool_lead_save_risk_assessment'),
+            ref('ai_demo.ai_tool_lead_save_messages_sentiment'),
         ])]"/>
     </record>
 

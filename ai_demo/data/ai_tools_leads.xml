@@ -132,4 +132,71 @@ Confirm details with the user before calling this tool.</field>
 }</field>
         <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(name, description, locals().get('partner_id'), locals().get('team_id'))]]></field>
     </record>
+    <!-- 7. Save AI-generated risk assessment to the lead field -->
+    <record id="ai_tool_lead_save_risk_assessment" model="ir.actions.server">
+        <field name="name">AI Demo: Save Risk Assessment</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Save Customer Risk Assessment
+Writes the AI-generated risk assessment to the **x_customer_risk_assessment** field on this lead.
+
+**Call this tool ONLY AFTER** you have already called:
+- Get Open Invoices
+- Get Late Payments
+- Get Open Backorders
+- Get Logistics Issues
+- Get Sale History (via the Sales topic)
+
+…and have synthesised a complete risk assessment yourself.
+
+The `assessment` text must include:
+- **Overall risk level**: Low / Medium / High
+- **Financial risk** (invoice amounts, days overdue, payment behaviour trend)
+- **Supply-chain risk** (open backorders, overdue deliveries)
+- **Strategic risk** (account size, buying trend, relationship warning signs)
+- **Summary sentence** with the key concern and recommended action</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "assessment": {
+            "type": "string",
+            "description": "Complete structured risk assessment text including overall risk level (Low/Medium/High), financial risk, supply-chain risk, strategic risk, and recommended action."
+        }
+    },
+    "required": ["assessment"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_risk_assessment(assessment)]]></field>
+    </record>
+
+    <!-- 8. Save AI-generated communication sentiment to the lead field -->
+    <record id="ai_tool_lead_save_messages_sentiment" model="ir.actions.server">
+        <field name="name">AI Demo: Save Communication Sentiment</field>
+        <field name="state">code</field>
+        <field name="use_in_ai" eval="True"/>
+        <field name="ai_tool_allow_end_message" eval="True"/>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="ai_tool_description">## Tool: Save Communication Sentiment Analysis
+Writes the AI-generated sentiment analysis to the **x_customer_messages_sentiment** field on this lead.
+
+**Call this tool ONLY AFTER** you have called Get Lead Communication (use limit=50 to capture the full history) and analysed every message for its emotional tone.
+
+The `sentiment_summary` text must include:
+- **Overall sentiment**: Positive / Neutral / Negative / Mixed
+- **Per-message breakdown**: date, author, label (happy, satisfied, neutral, frustrated, angry, sad, urgent)
+- **Outliers**: messages that deviate significantly from the overall tone (include date and reason)
+- **Actionable summary**: one sentence on what the tone means for the relationship and what to watch out for</field>
+        <field name="ai_tool_schema">{
+    "properties": {
+        "sentiment_summary": {
+            "type": "string",
+            "description": "Complete sentiment analysis including overall tone, per-message emotional labels, identified outliers, and an actionable relationship summary."
+        }
+    },
+    "required": ["sentiment_summary"],
+    "type": "object"
+}</field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_messages_sentiment(sentiment_summary)]]></field>
+    </record>
 </odoo>
