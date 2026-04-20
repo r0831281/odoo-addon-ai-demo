@@ -258,44 +258,44 @@ class CrmLeadAI(models.Model):
             _logger.warning('AI Demo: could not confirm demo sale order 2 (left in draft).')
 
         # ── Invoice 1: Overdue (issued 60 days ago, 30 days past due) ─────────
-        inv1 = self.env['account.move'].sudo().create({
-            'move_type': 'out_invoice',
-            'partner_id': partner.id,
-            'invoice_date': (today - timedelta(days=60)).strftime('%Y-%m-%d'),
-            'invoice_date_due': (today - timedelta(days=30)).strftime('%Y-%m-%d'),
-            'ref': 'AI-DEMO-INV-001',
-            'invoice_line_ids': [(0, 0, {
-                'product_id': _variant(0).id,
-                'quantity': 20,
-                'price_unit': 1299.00,
-                'name': _variant(0).display_name,
-            })],
-        })
         try:
+            inv1 = self.env['account.move'].sudo().create({
+                'move_type': 'out_invoice',
+                'partner_id': partner.id,
+                'invoice_date': (today - timedelta(days=60)).strftime('%Y-%m-%d'),
+                'invoice_date_due': (today - timedelta(days=30)).strftime('%Y-%m-%d'),
+                'ref': 'AI-DEMO-INV-001',
+                'invoice_line_ids': [(0, 0, {
+                    'product_id': _variant(0).id,
+                    'quantity': 20,
+                    'price_unit': 1299.00,
+                    'name': _variant(0).display_name,
+                })],
+            })
             inv1.action_post()
         except Exception:
             _logger.warning(
-                'AI Demo: could not post demo invoice 1. '
+                'AI Demo: could not create/post demo invoice 1. '
                 'Install a chart of accounts so invoice AI tools return data.'
             )
 
         # ── Invoice 2: Recent unpaid (issued 5 days ago, due in 25 days) ──────
-        inv2 = self.env['account.move'].sudo().create({
-            'move_type': 'out_invoice',
-            'partner_id': partner.id,
-            'invoice_date': (today - timedelta(days=5)).strftime('%Y-%m-%d'),
-            'invoice_date_due': (today + timedelta(days=25)).strftime('%Y-%m-%d'),
-            'ref': 'AI-DEMO-INV-002',
-            'invoice_line_ids': [(0, 0, {
-                'product_id': _variant(2).id,
-                'quantity': 15,
-                'price_unit': 189.00,
-                'name': _variant(2).display_name,
-            })],
-        })
         try:
+            inv2 = self.env['account.move'].sudo().create({
+                'move_type': 'out_invoice',
+                'partner_id': partner.id,
+                'invoice_date': (today - timedelta(days=5)).strftime('%Y-%m-%d'),
+                'invoice_date_due': (today + timedelta(days=25)).strftime('%Y-%m-%d'),
+                'ref': 'AI-DEMO-INV-002',
+                'invoice_line_ids': [(0, 0, {
+                    'product_id': _variant(2).id,
+                    'quantity': 15,
+                    'price_unit': 189.00,
+                    'name': _variant(2).display_name,
+                })],
+            })
             inv2.action_post()
         except Exception:
-            _logger.warning('AI Demo: could not post demo invoice 2.')
+            _logger.warning('AI Demo: could not create/post demo invoice 2.')
 
         return True
