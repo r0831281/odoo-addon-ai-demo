@@ -130,7 +130,7 @@ Confirm details with the user before calling this tool.</field>
     "required": ["name", "description"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(locals().get('name'), locals().get('description'), locals().get('partner_id'), locals().get('team_id'))]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.env['crm.lead'].sudo()._ai_create_demo_lead(locals().get('name'), locals().get('description'), locals().get('partner_id'), locals().get('team_id'))]]></field>
     </record>
     <!-- 7. Save AI-generated risk assessment to the lead field -->
     <record id="ai_tool_lead_save_risk_assessment" model="ir.actions.server">
