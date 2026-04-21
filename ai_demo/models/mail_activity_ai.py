@@ -9,6 +9,8 @@ class CrmLeadActivityAI(models.Model):
 
     def _ai_get_open_activities(self):
         """Return all open activities on this lead."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         activities = self.env['mail.activity'].sudo().search([
             ('res_model', '=', 'crm.lead'),
@@ -28,6 +30,8 @@ class CrmLeadActivityAI(models.Model):
 
     def _ai_suggest_activities(self):
         """Suggest next-best activities based on lead stage and contact history."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         stage = self.stage_id.name if self.stage_id else 'Unknown'
         last_msg = self.env['mail.message'].sudo().search([
@@ -80,6 +84,8 @@ class CrmLeadActivityAI(models.Model):
         note=None, user_id=None
     ):
         """Create a mail.activity on this lead and return a confirmation."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if activity_type is None:
             return "Tool error: 'activity_type' is required but was not provided."

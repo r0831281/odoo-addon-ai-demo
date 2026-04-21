@@ -9,6 +9,8 @@ class CrmLeadSaleAI(models.Model):
 
     def _ai_get_sale_history(self, limit=10):
         """Return confirmed sale order history for the lead's partner."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if not self.partner_id:
             return "No partner linked to this lead."
@@ -33,6 +35,8 @@ class CrmLeadSaleAI(models.Model):
 
     def _ai_get_sale_messages(self, limit=15):
         """Return relevant messages from this lead and linked sale orders."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         effective_limit = int(limit) if limit else 15
         sale_orders = self.env['sale.order'].sudo().search(

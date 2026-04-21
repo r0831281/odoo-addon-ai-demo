@@ -33,6 +33,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_save_risk_assessment(self, assessment):
         """Persist the AI-generated risk assessment onto the lead record."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if assessment is None:
             return "Tool error: 'assessment' is required but was not provided."
@@ -41,6 +43,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_save_messages_sentiment(self, sentiment_summary):
         """Persist the AI-generated sentiment analysis onto the lead record."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if sentiment_summary is None:
             return "Tool error: 'sentiment_summary' is required but was not provided."
@@ -51,6 +55,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_get_open_invoices(self):
         """Return open/unpaid invoices for the lead's partner."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if not self.partner_id:
             return "No partner linked to this lead."
@@ -72,6 +78,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_get_late_payments(self):
         """Return overdue invoice amounts and number of days overdue."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if not self.partner_id:
             return "No partner linked to this lead."
@@ -96,6 +104,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_get_open_backorders(self):
         """Return open backorders with product details for the lead's partner."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if not self.partner_id:
             return "No partner linked to this lead."
@@ -126,6 +136,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_get_communication(self, limit=20):
         """Return recent chatter messages, emails, notes and voice transcriptions."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         effective_limit = int(limit) if limit else 20
         messages = self.env['mail.message'].sudo().search([
@@ -146,6 +158,8 @@ class CrmLeadAI(models.Model):
 
     def _ai_get_logistics_issues(self):
         """Return overdue deliveries / logistics problems for the lead's partner."""
+        if not self:
+            return "No active lead record. Please open a lead before using this tool."
         self.ensure_one()
         if not self.partner_id:
             return "No partner linked to this lead."

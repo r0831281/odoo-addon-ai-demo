@@ -71,7 +71,7 @@ Optional: filter by product category ID.</field>
     "required": [],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = env['product.template'].sudo()._ai_get_product_catalogue(locals().get('category_id'))]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.env['product.template'].sudo()._ai_get_product_catalogue(locals().get('category_id'))]]></field>
     </record>
 
     <!-- 4. Create a sale quotation -->
@@ -117,7 +117,7 @@ Provide three parallel lists: product_ids (IDs from the catalogue tool), quantit
         <field name="code"><![CDATA[
 _lead_partner = getattr(record, 'partner_id', None)
 _pid = locals().get('partner_id') or (_lead_partner.id if _lead_partner else None)
-ai['result'] = env['sale.order'].sudo()._ai_create_quotation(
+ai['result'] = record.env['sale.order'].sudo()._ai_create_quotation(
     _pid,
     locals().get('product_ids'),
     locals().get('quantities'),
