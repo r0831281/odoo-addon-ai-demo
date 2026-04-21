@@ -81,11 +81,11 @@ class CrmLeadActivityAI(models.Model):
     ):
         """Create a mail.activity on this lead and return a confirmation."""
         self.ensure_one()
-        if not activity_type:
+        if activity_type is None:
             return "Tool error: 'activity_type' is required but was not provided."
-        if not summary:
+        if summary is None:
             return "Tool error: 'summary' is required but was not provided."
-        if not date_deadline:
+        if date_deadline is None:
             return "Tool error: 'date_deadline' is required but was not provided."
         type_map = {
             'call': 'Phone Call',
