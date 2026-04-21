@@ -130,7 +130,7 @@ Confirm details with the user before calling this tool.</field>
     "required": ["name", "description"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(name, description, locals().get('partner_id'), locals().get('team_id'))]]></field>
+        <field name="code"><![CDATA[ai['result'] = env['crm.lead'].sudo()._ai_create_demo_lead(locals().get('name'), locals().get('description'), locals().get('partner_id'), locals().get('team_id'))]]></field>
     </record>
     <!-- 7. Save AI-generated risk assessment to the lead field -->
     <record id="ai_tool_lead_save_risk_assessment" model="ir.actions.server">
@@ -167,7 +167,7 @@ The `assessment` text must include:
     "required": ["assessment"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_risk_assessment(assessment)]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_risk_assessment(locals().get('assessment'))]]></field>
     </record>
 
     <!-- 8. Save AI-generated communication sentiment to the lead field -->
@@ -197,6 +197,6 @@ The `sentiment_summary` text must include:
     "required": ["sentiment_summary"],
     "type": "object"
 }</field>
-        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_messages_sentiment(sentiment_summary)]]></field>
+        <field name="code"><![CDATA[ai['result'] = record.sudo()._ai_save_messages_sentiment(locals().get('sentiment_summary'))]]></field>
     </record>
 </odoo>

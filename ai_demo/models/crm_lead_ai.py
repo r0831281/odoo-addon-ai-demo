@@ -34,12 +34,16 @@ class CrmLeadAI(models.Model):
     def _ai_save_risk_assessment(self, assessment):
         """Persist the AI-generated risk assessment onto the lead record."""
         self.ensure_one()
+        if not assessment:
+            return "Tool error: 'assessment' is required but was not provided."
         self.sudo().write({'x_customer_risk_assessment': assessment})
         return "Customer risk assessment saved to the lead record."
 
     def _ai_save_messages_sentiment(self, sentiment_summary):
         """Persist the AI-generated sentiment analysis onto the lead record."""
         self.ensure_one()
+        if not sentiment_summary:
+            return "Tool error: 'sentiment_summary' is required but was not provided."
         self.sudo().write({'x_customer_messages_sentiment': sentiment_summary})
         return "Communication sentiment analysis saved to the lead record."
 
@@ -166,6 +170,8 @@ class CrmLeadAI(models.Model):
     @api.model
     def _ai_create_demo_lead(self, name, description, partner_id=None, team_id=None):
         """Create a new CRM lead/opportunity and return a success message."""
+        if not name:
+            return "Tool error: 'name' is required but was not provided."
         vals = {
             'name': name,
             'description': description or '',
