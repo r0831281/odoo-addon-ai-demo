@@ -99,33 +99,38 @@ class SaleOrderAI(models.Model):
     _inherit = 'sale.order'
 
     @api.model
-    def _ai_create_quotation(self, partner_id, lines=None, note=None):
+    def _ai_create_quotation(self, partner_id, product_ids=None, quantities=None, prices=None, note=None):
         """Create a draft sale order (quotation) and return its name and id.
 
-        Each line dict must have 'product_id' (product.product ID from the
-        catalogue tool) and 'qty'. 'price_unit' is optional – falls back to
-        the product's list price when omitted or zero.
+        Accepts parallel lists: product_ids (product.product IDs from the
+        catalogue tool), quantities, and optional prices (unit prices; falls
+        back to the product list price when omitted or zero).
         """
         try:
             partner_id = int(partner_id)
         except (TypeError, ValueError):
             return "Tool error: 'partner_id' must be a valid integer. Make sure the lead has a linked customer, or pass the partner_id explicitly."
 
-        if lines is None:
-            lines = []
-        if not isinstance(lines, list):
-            return "Tool error: 'lines' must be a list of line dictionaries."
+        if product_ids is None:
+            product_ids = []
+        if quantities is None:
+            quantities = []
+        if prices is None:
+            prices = []
+
+        if not isinstance(product_ids, list):
+            return "Tool error: 'product_ids' must be a list."
+        if not isinstance(quantities, list):
+            return "Tool error: 'quantities' must be a list."
+
+        if len(product_ids) != len(quantities):
+            return "Tool error: 'product_ids' and 'quantities' must have the same length."
 
         order_lines = []
         product_model = self.sudo().env['product.product']
-        for index, line in enumerate(lines, start=1):
-            if not isinstance(line, dict):
-                return f"Tool error: line {index} must be a dictionary."
-            if 'product_id' not in line:
-                return f"Tool error: line {index} is missing required field 'product_id'."
-
+        for index, (pid, qty_val) in enumerate(zip(product_ids, quantities), start=1):
             try:
-                product_id = int(line['product_id'])
+                product_id = int(pid)
             except (TypeError, ValueError):
                 return f"Tool error: line {index} has an invalid 'product_id'."
 
@@ -134,12 +139,13 @@ class SaleOrderAI(models.Model):
                 return f"Tool error: line {index} references unknown product_id {product_id}."
 
             try:
-                qty = float(line.get('qty', 1.0))
+                qty = float(qty_val)
             except (TypeError, ValueError):
                 return f"Tool error: line {index} has an invalid 'qty'."
 
             try:
-                price_unit = float(line.get('price_unit') or 0.0) or product.lst_price
+                raw_price = prices[index - 1] if index - 1 < len(prices) else None
+                price_unit = float(raw_price or 0.0) or product.lst_price
             except (TypeError, ValueError):
                 return f"Tool error: line {index} has an invalid 'price_unit'."
 
