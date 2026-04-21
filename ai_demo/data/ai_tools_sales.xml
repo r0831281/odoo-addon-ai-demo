@@ -84,47 +84,46 @@ Optional: filter by product category ID.</field>
         <field name="ai_tool_description">## Tool: Create a Sale Quotation
 Creates a draft sale order (quotation) with the specified product lines.
 Use this tool only after confirming the products and quantities with the user.
-Each line must include a product_id (from the catalogue tool), qty, and optionally price_unit.</field>
+Provide three parallel lists: product_ids (IDs from the catalogue tool), quantities, and optionally prices (unit prices; omit or leave empty to use list prices).</field>
         <field name="ai_tool_schema">{
     "properties": {
         "partner_id": {
             "type": "number",
             "description": "ID of the customer (partner) for the quotation"
         },
-        "lines": {
+        "product_ids": {
             "type": "array",
-            "description": "List of order lines",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "product_id": {
-                        "type": "number",
-                        "description": "ID of the product"
-                    },
-                    "qty": {
-                        "type": "number",
-                        "description": "Quantity to order"
-                    },
-                    "price_unit": {
-                        "type": "number",
-                        "description": "Unit price (optional, uses product list price if omitted)"
-                    }
-                },
-                "required": ["product_id", "qty"]
-            }
+            "description": "List of product IDs (from the catalogue tool), one per order line",
+            "items": {"type": "number"}
+        },
+        "quantities": {
+            "type": "array",
+            "description": "List of quantities to order, matching the order of product_ids",
+            "items": {"type": "number"}
+        },
+        "prices": {
+            "type": "array",
+            "description": "List of unit prices, matching the order of product_ids (optional – omit or pass empty list to use product list prices)",
+            "items": {"type": "number"}
         },
         "note": {
             "type": "string",
             "description": "Optional terms, notes, or remarks for the quotation"
         }
     },
-    "required": ["partner_id", "lines"],
+    "required": ["partner_id", "product_ids", "quantities"],
     "type": "object"
 }</field>
         <field name="code"><![CDATA[
 _lead_partner = getattr(record, 'partner_id', None)
 _pid = locals().get('partner_id') or (_lead_partner.id if _lead_partner else None)
-ai['result'] = env['sale.order'].sudo()._ai_create_quotation(_pid, locals().get('lines'), locals().get('note'))
+ai['result'] = env['sale.order'].sudo()._ai_create_quotation(
+    _pid,
+    locals().get('product_ids'),
+    locals().get('quantities'),
+    locals().get('prices'),
+    locals().get('note'),
+)
 ]]></field>
     </record>
 </odoo>
